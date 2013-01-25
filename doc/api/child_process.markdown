@@ -166,7 +166,7 @@ The `sendHandle` option to `child.send()` is for sending a TCP server or
 socket object to another process. The child will receive the object as its
 second argument to the `message` event.
 
-**send server object**
+#### Example: sending server object
 
 Here is an example of sending a server:
 
@@ -181,7 +181,7 @@ Here is an example of sending a server:
       child.send('server', server);
     });
 
-And the child would the recive the server object as:
+And the child would the receive the server object as:
 
     process.on('message', function(m, server) {
       if (m === 'server') {
@@ -194,9 +194,9 @@ And the child would the recive the server object as:
 Note that the server is now shared between the parent and child, this means
 that some connections will be handled by the parent and some by the child.
 
-**send socket object**
+#### Example: sending socket object
 
-Here is an example of sending a socket. It will spawn two childs and handle
+Here is an example of sending a socket. It will spawn two children and handle
 connections with the remote address `74.125.127.100` as VIP by sending the
 socket to a "special" child process. Other sockets will go to a "normal" process.
 
@@ -221,14 +221,14 @@ The `child.js` could look like this:
 
     process.on('message', function(m, socket) {
       if (m === 'socket') {
-        socket.end('You where handled as a ' + process.argv[2] + ' person');
+        socket.end('You were handled as a ' + process.argv[2] + ' person');
       }
     });
 
 Note that once a single socket has been sent to a child the parent can no
 longer keep track of when the socket is destroyed. To indicate this condition
 the `.connections` property becomes `null`.
-It is also recomended not to use `.maxConnections` in this condition.
+It is also recommended not to use `.maxConnections` in this condition.
 
 ### child.disconnect()
 
@@ -250,6 +250,8 @@ there is no IPC channel keeping it alive. When calling this method the
     for stdio.  (See below)
   * `env` {Object} Environment key-value pairs
   * `detached` {Boolean} The child will be a process group leader.  (See below)
+  * `uid` {Number} Sets the user identity of the process. (See setuid(2).)
+  * `gid` {Number} Sets the group identity of the process. (See setgid(2).)
 * return: {ChildProcess object}
 
 Launches a new process with the given `command`, with  command line arguments in `args`.
@@ -266,8 +268,7 @@ Use `env` to specify environment variables that will be visible to the new proce
 
 Example of running `ls -lh /usr`, capturing `stdout`, `stderr`, and the exit code:
 
-    var util  = require('util'),
-        spawn = require('child_process').spawn,
+    var spawn = require('child_process').spawn,
         ls    = spawn('ls', ['-lh', '/usr']);
 
     ls.stdout.on('data', function (data) {
@@ -285,8 +286,7 @@ Example of running `ls -lh /usr`, capturing `stdout`, `stderr`, and the exit cod
 
 Example: A very elaborate way to run 'ps ax | grep ssh'
 
-    var util  = require('util'),
-        spawn = require('child_process').spawn,
+    var spawn = require('child_process').spawn,
         ps    = spawn('ps', ['ax']),
         grep  = spawn('grep', ['ssh']);
 
@@ -306,7 +306,7 @@ Example: A very elaborate way to run 'ps ax | grep ssh'
     });
 
     grep.stdout.on('data', function (data) {
-      console.log(data);
+      console.log('' + data);
     });
 
     grep.stderr.on('data', function (data) {
@@ -449,8 +449,7 @@ See also: `child_process.exec()` and `child_process.fork()`
 
 Runs a command in a shell and buffers the output.
 
-    var util = require('util'),
-        exec = require('child_process').exec,
+    var exec = require('child_process').exec,
         child;
 
     child = exec('cat *.js bad_file | wc -l',
@@ -517,7 +516,7 @@ leaner than `child_process.exec`. It has the same options.
   * `cwd` {String} Current working directory of the child process
   * `env` {Object} Environment key-value pairs
   * `encoding` {String} (Default: 'utf8')
-  * `timeout` {Number} (Default: 0)
+  * `execPath` {String} Executable used to create the child process
 * Return: ChildProcess object
 
 This is a special case of the `spawn()` functionality for spawning Node
@@ -529,8 +528,17 @@ By default the spawned Node process will have the stdout, stderr associated
 with the parent's. To change this behavior set the `silent` property in the
 `options` object to `true`.
 
+The child process does not automatically exit once it's done, you need to call
+`process.exit()` explicitly. This limitation may be lifted in the future.
+
 These child Nodes are still whole new instances of V8. Assume at least 30ms
 startup and 10mb memory for each new Node. That is, you cannot create many
 thousands of them.
+
+The `execPath` property in the `options` object allows for a process to be
+created for the child rather than the current `node` executable. This should be
+done with care and by default will talk over the fd represented an
+environmental variable `NODE_CHANNEL_FD` on the child process. The input and
+output on this fd is expected to be line delimited JSON objects.
 
 [EventEmitter]: events.html#events_class_events_eventemitter

@@ -363,7 +363,7 @@ Handle<Value> WrappedScript::EvalMachine(const Arguments& args) {
     // to a local handle, and then dispose the persistent handle. This ensures
     // that when this function exits the context will be disposed.
     Persistent<Context> tmp = Context::New();
-    context = Local<Context>::New(tmp);
+    context = Local<Context>::New(node_isolate, tmp);
     tmp.Dispose();
 
   } else if (context_flag == userContext) {
@@ -417,6 +417,7 @@ Handle<Value> WrappedScript::EvalMachine(const Arguments& args) {
   if (output_flag == returnResult) {
     result = script->Run();
     if (result.IsEmpty()) {
+      if (display_error) DisplayExceptionLine(try_catch);
       return try_catch.ReThrow();
     }
   } else {

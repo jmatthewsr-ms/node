@@ -103,7 +103,7 @@ void EmitExit(v8::Handle<v8::Object> process);
 
 #define NODE_DEFINE_CONSTANT(target, constant)                            \
   (target)->Set(v8::String::NewSymbol(#constant),                         \
-                v8::Integer::New(constant),                               \
+                v8::Number::New(constant),                                \
                 static_cast<v8::PropertyAttribute>(                       \
                     v8::ReadOnly|v8::DontDelete))
 
@@ -127,24 +127,24 @@ void SetPrototypeMethod(target_t target,
 #define NODE_SET_METHOD node::SetMethod
 #define NODE_SET_PROTOTYPE_METHOD node::SetPrototypeMethod
 
-enum encoding {ASCII, UTF8, BASE64, UCS2, BINARY, HEX};
+enum encoding {ASCII, UTF8, BASE64, UCS2, BINARY, HEX, BUFFER};
 enum encoding ParseEncoding(v8::Handle<v8::Value> encoding_v,
                             enum encoding _default = BINARY);
 NODE_EXTERN void FatalException(v8::TryCatch &try_catch);
 void DisplayExceptionLine(v8::TryCatch &try_catch); // hack
 
-v8::Local<v8::Value> Encode(const void *buf, size_t len,
-                            enum encoding encoding = BINARY);
+NODE_EXTERN v8::Local<v8::Value> Encode(const void *buf, size_t len,
+                                        enum encoding encoding = BINARY);
 
 // Returns -1 if the handle was not valid for decoding
-ssize_t DecodeBytes(v8::Handle<v8::Value>,
-                    enum encoding encoding = BINARY);
+NODE_EXTERN ssize_t DecodeBytes(v8::Handle<v8::Value>,
+                                enum encoding encoding = BINARY);
 
 // returns bytes written.
-ssize_t DecodeWrite(char *buf,
-                    size_t buflen,
-                    v8::Handle<v8::Value>,
-                    enum encoding encoding = BINARY);
+NODE_EXTERN ssize_t DecodeWrite(char *buf,
+                                size_t buflen,
+                                v8::Handle<v8::Value>,
+                                enum encoding encoding = BINARY);
 
 v8::Local<v8::Object> BuildStatsObject(const uv_statbuf_t* s);
 
@@ -212,9 +212,9 @@ node_module_struct* get_builtin_module(const char *name);
  * When this version number is changed, node.js will refuse
  * to load older modules.  This should be done whenever
  * an API is broken in the C++ side, including in v8 or
- * other dependencies
+ * other dependencies.
  */
-#define NODE_MODULE_VERSION (1)
+#define NODE_MODULE_VERSION 0x000A /* v0.10 */
 
 #define NODE_STANDARD_MODULE_STUFF \
           NODE_MODULE_VERSION,     \
@@ -265,10 +265,5 @@ MakeCallback(const v8::Handle<v8::Object> object,
              v8::Handle<v8::Value> argv[]);
 
 }  // namespace node
-
-#if !defined(NODE_WANT_INTERNALS) && !defined(_WIN32)
-# include "ev-emul.h"
-# include "eio-emul.h"
-#endif
 
 #endif  // SRC_NODE_H_

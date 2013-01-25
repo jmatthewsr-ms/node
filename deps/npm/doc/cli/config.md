@@ -112,7 +112,6 @@ The following shorthands are parsed on the command-line:
 * `-reg`: `--registry`
 * `-v`: `--version`
 * `-f`: `--force`
-* `-l`: `--long`
 * `-desc`: `--description`
 * `-S`: `--save`
 * `-D`: `--save-dev`
@@ -399,7 +398,7 @@ A proxy to use for outgoing https requests.
 
 ### user-agent
 
-* Default: npm/{npm.version} node/{process.version}
+* Default: node/{process.version} {process.platform} {process.arch}
 * Type: String
 
 Sets a User-Agent to the request header
@@ -501,6 +500,9 @@ It cannot be set from the command line, but if you are using npm
 programmatically, you may wish to send logs to somewhere other than
 stderr.
 
+If the `color` config is set to true, then this stream will receive
+colored output if it is a TTY.
+
 ### long
 
 * Default: false
@@ -546,6 +548,15 @@ The url to report npat test results.
 
 A node module to `require()` when npm loads.  Useful for programmatic
 usage.
+
+### optional
+
+* Default: true
+* Type: Boolean
+
+Attempt to install packages in the `optionalDependencies` hash.  Note
+that if these packages fail to install, the overall installation
+process is not aborted.
 
 ### parseable
 
@@ -693,6 +704,17 @@ character to indicate reverse sort.
 * Type: path
 
 The shell to run for the `npm explore` command.
+
+### sign-git-tag
+
+* Default: false
+* Type: Boolean
+
+If set to true, then the `npm version` command will tag the version
+using `-s` to add a signature.
+
+Note that git requires you to have set up GPG keys in your git configs
+for this to work properly.
 
 ### strict-ssl
 
